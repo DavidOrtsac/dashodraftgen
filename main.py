@@ -3,7 +3,7 @@ from langchain_helper import ArticleGenerator
 from langchain.callbacks import StreamlitCallbackHandler
 
 # Set page config
-st.set_page_config(page_title='Dasho Article Generation', page_icon=':pencil:', layout='centered', initial_sidebar_state='collapsed')
+st.set_page_config(page_title='Dasho Draft Gen', page_icon=':pencil:', layout='centered', initial_sidebar_state='collapsed')
 
 # Define custom colors for layout
 primaryColor = "#4E89AE"
