@@ -126,19 +126,21 @@ with expander_inputs:
 
     brand = st.text_input('Brand:', '')
     brand_description = st.text_input('Brand Description:', '')
-    content_type_options = ['', 'Article', 'Blog Post', 'Email Newsletter', 'Newsletter', 'Infographics', 'Short Story', 'Poem', 'Press Release', 'Product Description', 'Product Review', 'Social Media Captions', 'Twitter Captions', 'Advertisement', 'Shortform Video Script', 'SEO-Optimized Article', 'Social Media Post']
+    content_type_options = ['', 'Article', 'Blog Post', 'Newsletter', 'Infographics', 'Short Story', 'Press Release', 'Product Description', 'Product Review', 'Captions', 'Shortform Video Script', 'Longform Video Script', 'Social Media Post (Full)']
     content_type = st.selectbox('Content Type:', sorted(content_type_options))
+    platform_options = ['General', 'Blog', 'Email', 'Facebook', 'Instagram', 'Twitter', 'Reels', 'Threads', 'LinkedIn', 'TikTok', 'YouTube', 'Pinterest', 'E-Commerce', 'Snapchat', 'Website', 'Document', 'Other']
+    platform = st.selectbox('Platform:', platform_options)
     topic = st.text_input('Topic:', '')
     writing_style = st.text_input('Writing Style:', '')
     target_audience = st.text_input('Target Audience:', '')
     additional_instructions = st.text_area('Additional Information (Optional):', '')
 
 
-if brand and brand_description and content_type and topic and writing_style and target_audience and st.button('Generate Draft'):
+if brand and brand_description and platform and content_type and topic and writing_style and target_audience and st.button('Generate Draft'):
     st.markdown("---")
     if not st.session_state['article_gen']:
         # Initialize the ArticleGenerator object with the selected token length
-        st.session_state['article_gen'] = ArticleGenerator(selected_model, content_type, brand, brand_description, topic, writing_style, target_audience, additional_instructions, token_length_options[selected_token_length])
+        st.session_state['article_gen'] = ArticleGenerator(selected_model, content_type, brand, brand_description, platform, topic, writing_style, target_audience, additional_instructions, token_length_options[selected_token_length])
     container = st.empty()  # Use empty to be able to continually update the output
     st_callback = StreamlitCallbackHandler(container)  # Initialize the Streamlit callback handler
     response = st.session_state['article_gen'].generate(st_callback)  # Pass the callback handler to the generate method
