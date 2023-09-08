@@ -178,9 +178,9 @@ if st.session_state['output_generated']:
     if 'user_feedback' not in st.session_state:
         st.session_state['user_feedback'] = ''
 
-    user_feedback = st.text_input('Feedback:', value=st.session_state['user_feedback'])
+    user_feedback = st.text_input('Got more follow-up instructions for the AI? Send them here:', value=st.session_state['user_feedback'])
 
-    if st.button('Send Feedback') and user_feedback:
+    if st.button('Send') and user_feedback:
         # Initialize the Streamlit callback handler and generate the output
         st_callback = StreamlitCallbackHandler(st.empty())  # Initialize the Streamlit callback handler
         new_response = st.session_state['article_gen'].generate_with_feedback(user_feedback, st_callback)  # Pass the callback handler to the generate_with_feedback method
@@ -195,7 +195,7 @@ if st.session_state['output_generated']:
 # Feedback thread rendering should be done outside st.empty() context
 if st.session_state['feedbacks']:
     st.markdown("---")
-    st.subheader("Feedback Thread")
+    st.subheader("Comment Thread")
     
     # Start from the last feedback since it's the newest
     for index, (feedback, output) in enumerate(zip(reversed(st.session_state['feedbacks']), reversed(st.session_state['outputs']))):
@@ -203,8 +203,9 @@ if st.session_state['feedbacks']:
         if index == 0:  # If it's the newest message
             st.markdown(f'<div class="newest_message"><caption>Feedback: {feedback}</caption><br>Output: {output}</div>', unsafe_allow_html=True)
         else:
-            st.caption(f"Feedback: {feedback}")
+            st.caption(f"Comments: {feedback}")
             st.write(f"Output: {output}")
         
-        st.markdown("---")
+    st.markdown("---")
+st.write("**Got any feedback to improve this app? Send them to [m.me/fleirecastro](https://www.facebook.com/messages/t/585770910)!**")
 st.caption("© 2023 DashoContent. All rights reserved.")
