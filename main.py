@@ -1,6 +1,11 @@
+# main.py
+
 import streamlit as st
 from langchain_helper import ArticleGenerator
 from langchain.callbacks import StreamlitCallbackHandler
+
+import json
+import os
 
 # Set page config
 st.set_page_config(page_title='Dasho Draft Gen', page_icon=':pencil:', layout='centered', initial_sidebar_state='collapsed')
@@ -57,6 +62,13 @@ st.markdown(custom_css, unsafe_allow_html=True)
 st.title("Dasho Draft Generator")
 st.text("")
 
+# Load presets from file
+if os.path.exists('presets.json'):
+    with open('presets.json', 'r') as f:
+        presets = json.load(f)
+else:
+    presets = {}
+
 expander_info = st.expander('How Does This Work?', expanded=False)
 with expander_info:
     st.write("### **How the Dasho Draft Generator Works**")
@@ -100,41 +112,140 @@ with expander_info:
 
     st.write("With these steps, the Dasho Draft Generator ensures that you receive quality written content, tailored to your specific requirements.")
 
+# Initialize session state variables
+if 'article_gen' not in st.session_state:
+    st.session_state['article_gen'] = None
+if 'feedbacks' not in st.session_state:
+    st.session_state['feedbacks'] = []
+if 'outputs' not in st.session_state:
+    st.session_state['outputs'] = []
+if 'output_generated' not in st.session_state:
+    st.session_state['output_generated'] = False
+if 'show_output' not in st.session_state:
+    st.session_state['show_output'] = True
+
+# Initialize form input session state variables
+input_variables = ['brand', 'brand_description', 'content_type', 'platform', 'topic', 'writing_style', 'target_audience', 'additional_instructions', 'selected_model', 'selected_token_length', 'selected_preset', 'preset_name_input']
+
+for var in input_variables:
+    if var not in st.session_state:
+        if var == 'selected_model':
+            st.session_state[var] = 'gpt-4o'
+        elif var == 'selected_token_length':
+            st.session_state[var] = 'Medium'
+        else:
+            st.session_state[var] = ''
+
+def load_preset():
+    selected_preset = st.session_state['selected_preset']
+    if selected_preset and selected_preset in presets:
+        preset = presets[selected_preset]
+        st.session_state['brand'] = preset.get('brand', '')
+        st.session_state['brand_description'] = preset.get('brand_description', '')
+        st.session_state['content_type'] = preset.get('content_type', '')
+        st.session_state['platform'] = preset.get('platform', '')
+        st.session_state['topic'] = preset.get('topic', '')
+        st.session_state['writing_style'] = preset.get('writing_style', '')
+        st.session_state['target_audience'] = preset.get('target_audience', '')
+        st.session_state['additional_instructions'] = preset.get('additional_instructions', '')
+        st.session_state['selected_model'] = preset.get('selected_model', 'gpt-4o')
+        st.session_state['selected_token_length'] = preset.get('selected_token_length', 'Medium')
+    else:
+        # Clear the session_state variables
+        st.session_state['brand'] = ''
+        st.session_state['brand_description'] = ''
+        st.session_state['content_type'] = ''
+        st.session_state['platform'] = ''
+        st.session_state['topic'] = ''
+        st.session_state['writing_style'] = ''
+        st.session_state['target_audience'] = ''
+        st.session_state['additional_instructions'] = ''
+        st.session_state['selected_model'] = 'gpt-4o'
+        st.session_state['selected_token_length'] = 'Medium'
+
 expander_inputs = st.expander('Inputs', expanded=True)
 with expander_inputs:
+    # Preset selection
+    preset_names = list(presets.keys())
+    st.selectbox('Select a Preset:', [''] + preset_names, key='selected_preset', on_change=load_preset)
+
     model_options = ['gpt-4o', 'gpt-4o-mini']
-    selected_model = st.selectbox('Select Model:', model_options)
+    st.selectbox('Select Model:', model_options, index=model_options.index(st.session_state['selected_model']) if st.session_state['selected_model'] in model_options else 0, key='selected_model')
+
     token_length_options = {
-    'Short': 150,
-    'Medium': 550,
-    'Long': 1022
+        'Short': 150,
+        'Medium': 550,
+        'Long': 1022
     }
-    selected_token_length = st.selectbox('Token Length:', list(token_length_options.keys()))
+    st.selectbox('Token Length:', list(token_length_options.keys()), index=list(token_length_options.keys()).index(st.session_state['selected_token_length']) if st.session_state['selected_token_length'] in token_length_options else 1, key='selected_token_length')
     st.markdown("---")
 
-    # Initialize state variables
-    if 'article_gen' not in st.session_state:
-        st.session_state['article_gen'] = None
-    if 'feedbacks' not in st.session_state:
-        st.session_state['feedbacks'] = []
-    if 'outputs' not in st.session_state:
-        st.session_state['outputs'] = []
-    if 'output_generated' not in st.session_state:
-        st.session_state['output_generated'] = False
-    if 'show_output' not in st.session_state:
-        st.session_state['show_output'] = True
-
-    brand = st.text_input('Brand:', '')
-    brand_description = st.text_input('Brand Description:', '')
+    st.text_input('Brand:', st.session_state['brand'], key='brand')
+    st.text_input('Brand Description:', st.session_state['brand_description'], key='brand_description')
     content_type_options = ['', 'Article', 'Blog Post', 'Newsletter', 'Infographics', 'Short Story', 'Press Release', 'Product Description', 'Product Review', 'Captions', 'Shortform Video Script', 'Longform Video Script', 'Social Media Post (Full)']
-    content_type = st.selectbox('Content Type:', sorted(content_type_options))
+    st.selectbox('Content Type:', sorted(content_type_options), index=sorted(content_type_options).index(st.session_state['content_type']) if st.session_state['content_type'] in content_type_options else 0, key='content_type')
     platform_options = ['General', 'Blog', 'Email', 'Facebook', 'Instagram', 'Twitter', 'Reels', 'Threads', 'LinkedIn', 'TikTok', 'YouTube', 'Pinterest', 'E-Commerce', 'Snapchat', 'Website', 'Document', 'Other']
-    platform = st.selectbox('Platform:', platform_options)
-    topic = st.text_input('Topic:', '')
-    writing_style = st.text_input('Writing Style:', '')
-    target_audience = st.text_input('Target Audience:', '')
-    additional_instructions = st.text_area('Additional Information (Optional):', '')
+    st.selectbox('Platform:', platform_options, index=platform_options.index(st.session_state['platform']) if st.session_state['platform'] in platform_options else 0, key='platform')
+    st.text_input('Topic:', st.session_state['topic'], key='topic')
+    st.text_input('Writing Style:', st.session_state['writing_style'], key='writing_style')
+    st.text_input('Target Audience:', st.session_state['target_audience'], key='target_audience')
+    st.text_area('Additional Information (Optional):', st.session_state['additional_instructions'], key='additional_instructions')
 
+    st.markdown("---")
+    st.text_input('Preset Name (if saving):', st.session_state['preset_name_input'], key='preset_name_input')
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button('Save current inputs as a new preset'):
+            if st.session_state['preset_name_input']:
+                # Save the current inputs as a new preset
+                presets[st.session_state['preset_name_input']] = {
+                    'brand': st.session_state['brand'],
+                    'brand_description': st.session_state['brand_description'],
+                    'content_type': st.session_state['content_type'],
+                    'platform': st.session_state['platform'],
+                    'topic': st.session_state['topic'],
+                    'writing_style': st.session_state['writing_style'],
+                    'target_audience': st.session_state['target_audience'],
+                    'additional_instructions': st.session_state['additional_instructions'],
+                    'selected_model': st.session_state['selected_model'],
+                    'selected_token_length': st.session_state['selected_token_length']
+                }
+                # Save the presets to the file
+                with open('presets.json', 'w') as f:
+                    json.dump(presets, f)
+                st.success(f'Preset "{st.session_state["preset_name_input"]}" saved successfully!')
+            else:
+                st.error('Please enter a name for your preset.')
+    with col2:
+        if st.button('Delete selected preset'):
+            selected_preset = st.session_state.get('selected_preset', '')
+            if selected_preset and selected_preset in presets:
+                del presets[selected_preset]
+                # Save the presets to the file
+                with open('presets.json', 'w') as f:
+                    json.dump(presets, f)
+                st.success(f'Preset "{selected_preset}" deleted successfully!')
+                # Clear the selected_preset
+                st.session_state['selected_preset'] = ''
+                # Clear the preset_name_input
+                st.session_state['preset_name_input'] = ''
+            else:
+                st.error('No preset selected or preset does not exist.')
+
+    st.markdown("---")
+
+# Use the session_state variables
+brand = st.session_state['brand']
+brand_description = st.session_state['brand_description']
+content_type = st.session_state['content_type']
+platform = st.session_state['platform']
+topic = st.session_state['topic']
+writing_style = st.session_state['writing_style']
+target_audience = st.session_state['target_audience']
+additional_instructions = st.session_state['additional_instructions']
+selected_model = st.session_state['selected_model']
+selected_token_length = st.session_state['selected_token_length']
 
 if brand and brand_description and platform and content_type and topic and writing_style and target_audience and st.button('Generate Draft'):
     st.markdown("---")
@@ -177,8 +288,7 @@ if st.session_state['output_generated']:
     st.markdown("---")
     if 'user_feedback' not in st.session_state:
         st.session_state['user_feedback'] = ''
-
-    user_feedback = st.text_input('Got more follow-up instructions for the AI? Send them here:', value=st.session_state['user_feedback'])
+    user_feedback = st.text_input('Got more follow-up instructions for the AI? Send them here:', value=st.session_state['user_feedback'], key='user_feedback')
 
     if st.button('Send') and user_feedback:
         # Initialize the Streamlit callback handler and generate the output

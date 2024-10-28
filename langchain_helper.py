@@ -16,7 +16,7 @@ openapi_key = os.getenv("OPENAPI_KEY")
 os.environ['OPENAI_API_KEY'] = openapi_key
 
 class ArticleGenerator:
-    def __init__(self, model_name, content_type, platform, brand, brand_description, topic, writing_style, target_audience, additional_instructions, max_tokens=822):
+    def __init__(self, model_name, content_type, brand, brand_description, platform, topic, writing_style, target_audience, additional_instructions, max_tokens=822):
         self.llm = ChatOpenAI(temperature=0.8, max_tokens=max_tokens, model_name=model_name, streaming=True)
         self.content_type = content_type
         self.platform = platform
