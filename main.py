@@ -64,9 +64,9 @@ with expander_info:
     st.write("The Dasho Draft Generator is a powerful tool that harnesses the capabilities of AI to craft written content tailored to your needs. Below is an overview of how the application operates:")
 
     st.markdown("**1. Model Selection**")
-    st.write("- Choose between two models: GPT-4 and GPT-3.5-Turbo.")
-    st.write("- GPT-4 (Recommended): More intelligent and creative but runs slower.")
-    st.write("- GPT-3.5-Turbo: Faster but less capable than GPT-4.")
+    st.write("- Choose between two models: GPT-4o and GPT-4o-Mini.")
+    st.write("- GPT-4o (Recommended): More intelligent and creative but runs slower.")
+    st.write("- GPT-4o-mini: Faster but less capable than GPT-4o.")
 
     st.markdown("**2. Token Length Selection**")
     st.write("- Choose between three token lengths: Short, Medium, and Long.")
@@ -102,7 +102,7 @@ with expander_info:
 
 expander_inputs = st.expander('Inputs', expanded=True)
 with expander_inputs:
-    model_options = ['gpt-4', 'gpt-3.5-turbo']
+    model_options = ['gpt-4o', 'gpt-4o-mini']
     selected_model = st.selectbox('Select Model:', model_options)
     token_length_options = {
     'Short': 150,
