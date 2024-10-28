@@ -208,4 +208,4 @@ if st.session_state['feedbacks']:
         
     st.markdown("---")
 st.write("**Got any feedback to improve this app? Send them to [m.me/fleirecastro](https://www.facebook.com/messages/t/585770910)!**")
-st.caption("© 2023 DashoContent. All rights reserved.")
+st.caption("© 2024 DashoContent. All rights reserved.")
